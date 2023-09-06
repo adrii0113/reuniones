@@ -8,16 +8,18 @@ const getList = (): IList => getSP().web.lists.getByTitle('Sectores');
 const getSectors = async (): Promise<ISector[]> =>{
 
 
-    const sectores: ISector[] = await getList().items.select("ID","CodigoSector","Denominacion")()
+    const sectores: ISector[] = await getList().items.select("Title","ID","CodigoSector","Denominacion")()
 
 
-    return sectores.map((sector) =>( {
+    // return sectores.map((sector) =>( {
+    //     Title:sector.Title,
+    //     ID:sector.ID,
+    //     CodigoSector:sector.CodigoSector,
+    //     Denominacion:sector.Denominacion,
         
-        ID:sector.ID,
-        CodigoSector:sector.CodigoSector,
-        Denominacion:sector.Denominacion,
-        
-    }))
+    // }))
+
+    return sectores
 
 
 

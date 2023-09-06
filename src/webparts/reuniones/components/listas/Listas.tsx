@@ -7,7 +7,7 @@ import {
 
 import { IGrupos } from "../../interfaces/IGrupos"
 
-import { GroupForm } from "../../front/components/group-form/group-form"
+// import { GroupForm } from "../../front/components/group-form/group-form"
 
 // get data from api
 export default function ListaGrupos (arrGrupos: IGrupos[]){
@@ -17,7 +17,7 @@ export default function ListaGrupos (arrGrupos: IGrupos[]){
     
     <div>
         <DetailsList items={arrGrupos}></DetailsList>
-        <GroupForm></GroupForm>
+        {/* <GroupForm></GroupForm> */}
     </div>
     
     

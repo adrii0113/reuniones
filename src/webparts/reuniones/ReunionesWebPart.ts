@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { Version } from '@microsoft/sp-core-library';
+// import { Version } from '@microsoft/sp-core-library';
 import {
   IPropertyPaneConfiguration,
   PropertyPaneTextField
@@ -10,30 +10,45 @@ import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
 import * as strings from 'ReunionesWebPartStrings';
 // import Reuniones from './components/Reuniones1';
-import { IReunionesProps } from './components/IReunionesProps';
+// import { IReunionesProps } from './components/IReunionesProps';
 
 
 // sp imports
-import { getSP } from '../../pnp-js-config';
+import {  getSP } from '../../pnp-js-config';
 export interface IReunionesWebPartProps {
   description: string;
 }
 
 
-import { GroupFunctions } from './functions/GroupFunctions';
+// import { GroupFunctions } from './functions/GroupFunctions';
 import Reuniones from './front/Reuniones'
 
-export default class ReunionesWebPart extends BaseClientSideWebPart<IReunionesWebPartProps> {
+
+
+// test
+// import { spfi } from "@pnp/sp";
+import "@pnp/sp/taxonomy";
+import { GroupFormProps } from './front/components/group-form/group-form';
+// import { ITermStoreInfo } from "@pnp/sp/taxonomy";
+
+
+export default class ReunionesWebPart extends BaseClientSideWebPart<void> {
 
   // private _isDarkTheme: boolean = false;
   // private _environmentMessage: string = '';
+  // private sp  = spfi()
+  
   private async _getListData(): Promise<[]>{
 
     // const _sp = getSP(this.context)
 
     // console.log(await _sp.web.lists.getByTitle('Sectores')())
 
-    console.log(await GroupFunctions.getAllGroups())
+    // console.log(await GroupFunctions.getAllGroups())
+    // console.log( this.sp.web.lists());
+    // console.log((await getSP().termStore.groups.getById("1e2cb030-5981-48aa-902f-2a338aa96107").sets.getById('2bc7e5fd-e09f-4fb1-87da-855111f5c1ea')))
+    
+    
    
   return 
 
@@ -43,7 +58,7 @@ export default class ReunionesWebPart extends BaseClientSideWebPart<IReunionesWe
     // obtener los ids de las listas que se necesitan y pasarselas al componente como un objeto
     const guids = {grupos:'296e7a8d-7bf8-4173-903d-a6c2c348fa4b', sectores:'676b0dc6-6450-437b-bf04-6b9b5ec1c24a'};
     
-    const element: React.ReactElement<IReunionesProps> = React.createElement(
+    const element: React.ReactElement<GroupFormProps> = React.createElement(
       Reuniones,
       {
         // description: this.properties.description,
@@ -64,39 +79,39 @@ export default class ReunionesWebPart extends BaseClientSideWebPart<IReunionesWe
   //  this._getListData()
     getSP(this.context)
     await this._getListData()
-    return this._getEnvironmentMessage().then(message => {
-      // this._environmentMessage = message;
-    });
+    // return this._getEnvironmentMessage().then(message => {
+    //   // this._environmentMessage = message;
+    // });
    
   }
 
 
 
-  private _getEnvironmentMessage(): Promise<string> {
-    if (!!this.context.sdks.microsoftTeams) { // running in Teams, office.com or Outlook
-      return this.context.sdks.microsoftTeams.teamsJs.app.getContext()
-        .then(context => {
-          let environmentMessage: string = '';
-          switch (context.app.host.name) {
-            case 'Office': // running in Office
-              environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentOffice : strings.AppOfficeEnvironment;
-              break;
-            case 'Outlook': // running in Outlook
-              environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentOutlook : strings.AppOutlookEnvironment;
-              break;
-            case 'Teams': // running in Teams
-              environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentTeams : strings.AppTeamsTabEnvironment;
-              break;
-            default:
-              throw new Error('Unknown host');
-          }
+  // private _getEnvironmentMessage(): Promise<string> {
+  //   if (!!this.context.sdks.microsoftTeams) { // running in Teams, office.com or Outlook
+  //     return this.context.sdks.microsoftTeams.teamsJs.app.getContext()
+  //       .then(context => {
+  //         let environmentMessage: string = '';
+  //         switch (context.app.host.name) {
+  //           case 'Office': // running in Office
+  //             environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentOffice : strings.AppOfficeEnvironment;
+  //             break;
+  //           case 'Outlook': // running in Outlook
+  //             environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentOutlook : strings.AppOutlookEnvironment;
+  //             break;
+  //           case 'Teams': // running in Teams
+  //             environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentTeams : strings.AppTeamsTabEnvironment;
+  //             break;
+  //           default:
+  //             throw new Error('Unknown host');
+  //         }
 
-          return environmentMessage;
-        });
-    }
+  //         return environmentMessage;
+  //       });
+  //   }
 
-    return Promise.resolve(this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentSharePoint : strings.AppSharePointEnvironment);
-  }
+  //   return Promise.resolve(this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentSharePoint : strings.AppSharePointEnvironment);
+  // }
 
   // protected onThemeChanged(currentTheme: IReadonlyTheme | undefined): void {
   //   if (!currentTheme) {
@@ -120,9 +135,9 @@ export default class ReunionesWebPart extends BaseClientSideWebPart<IReunionesWe
     ReactDom.unmountComponentAtNode(this.domElement);
   }
 
-  protected get dataVersion(): Version {
-    return Version.parse('1.0');
-  }
+  // protected get dataVersion(): Version {
+  //   return Version.parse('1.0');
+  // }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
     return {

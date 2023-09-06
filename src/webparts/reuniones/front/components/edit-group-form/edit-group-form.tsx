@@ -9,12 +9,25 @@ interface RouteParams {
 
 import { GroupForm } from '../group-form/group-form';
 import { GroupFunctions } from '../../../functions/GroupFunctions';
-export default function GroupFormEdit (){
+import type { WebPartContext } from "@microsoft/sp-webpart-base";
+import { Functions } from '../../../utils/functions';
+interface GroupFormProps {
+
+    context?: WebPartContext;
+  
+}
+
+
+export default function GroupFormEdit ({context }: GroupFormProps){
+
+    
 
     const { codigo } = useParams<RouteParams>();
     const [group,setGroup] = React.useState <IGrupos>();
-
+    const [haveReadPerms,setHaveReadPerms] = React.useState(true)
     React.useEffect(() => {
+
+        setHaveReadPerms(Functions.checkFullControlPermission(context))
 
         console.log(codigo)
         const test = async () => {
@@ -36,7 +49,10 @@ export default function GroupFormEdit (){
         <div>
             {/* {group} */}
             {/* aqui llamo al componente de listado pasando el objeto del item que ha seleccionado */}
-            <GroupForm grupo={group}></GroupForm>
+            {
+                haveReadPerms === true ? <GroupForm grupo={group} context={context}></GroupForm>: <GroupForm context={context}></GroupForm> 
+            }
+            
         </div>
 
 

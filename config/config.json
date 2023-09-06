@@ -11,9 +11,12 @@
       ]
     }
   },
-  "externals": {},
+  "externals": {
+    "@microsoft/sp-page-context": "node_modules/@microsoft/sp-page-context/lib/SPPageContext.js"
+  },
   "localizedResources": {
     "ReunionesWebPartStrings": "lib/webparts/reuniones/loc/{locale}.js",
     "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js"
+    
   }
 }

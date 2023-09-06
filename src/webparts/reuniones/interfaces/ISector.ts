@@ -1,7 +1,8 @@
 export interface ISector {
-
-    ID: number;
-    CodigoSector: number,
-    Denominacion: string
+    Title?:string,
+    ID: number,
+    id:number,
+    CodigoSector?: number,
+    Denominacion?: string
     
 }
