@@ -73,10 +73,7 @@ const categories :IDropdownOption[] = [
 ]
 
 
-const tipoGrupos :IDropdownOption[] = [
-  {key: "estable", text: "Grupo estable"},
- 
-]
+
 
 
 export interface GroupFormProps {
@@ -117,6 +114,7 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
   const [paisesOptions,setPaisesOptions] = useState<IDropdownOption[]>([])
   const [ambitosOptions,setAmbitosOptions] = useState<IDropdownOption[]>([])
   const [sectorOptions, setSectorOPtions] = useState <IDropdownOption[]>([])
+  const [groupOptions, setGroupOptions] = useState <IDropdownOption[]>([])
   // error control array 
   const [errorsStorage,setErrorsStorage] = useState<ErorrsFormProps[]>([])
   // const [errores, setErrores] = useState({});
@@ -192,6 +190,23 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
       }));
       
       setSectorOPtions(opciones)
+
+      let tipoGrupos : IDropdownOption[] = []
+
+      const prueba = await GroupFunctions.getChoicesFromChoiceField()
+      prueba.Choices.map((choice) => {
+        tipoGrupos.push({key: choice,
+        text:choice})
+
+
+        
+      })
+
+     
+      setGroupOptions(tipoGrupos)
+      console.log(groupOptions)
+      // console.log(tipoGrupos)
+       
     }
 
     get().then((items)=>console.log(items)).catch(console.error)
@@ -354,6 +369,8 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
           estado === true ? newItemFormItem.Estado = true: newItemFormItem.Estado= false;
 
           newItemFormItem.sectorAsociadoId = sectorKeyNumberFormat
+
+          newItemFormItem.TipoGrupo = tipoGrupo.text
           
           await GroupFunctions.addNewGroups(newItemFormItem)
 
@@ -411,10 +428,10 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
           data:label.id
         })
        
-      setCiudadesOptions(ciudadesArray)
         
-        })
+        setCiudadesOptions(ciudadesArray)
       })
+    })
 
 
       let paisesArray : IDropdownOption[] = []
@@ -570,7 +587,7 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
       <Field label='Tipo de grupo'>
       <Dropdown
         placeholder="Seleccione un grupo"
-        options={tipoGrupos}
+        options={groupOptions}
         // {...register("tipoGrupo")}
         onChange={handleTipoGrupo}
         selectedKey={tipoGrupo?.key}

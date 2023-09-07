@@ -33,7 +33,7 @@ import { SectorFunctions } from "../functions/SectorFunction";
 export default function Reuniones({context}: GroupFormProps) {
 
   
-      const getList =  getSP().web.lists.getById('296e7a8d-7bf8-4173-903d-a6c2c348fa4b').items();
+      const getList =  getSP().web.lists.getById('296e7a8d-7bf8-4173-903d-a6c2c348fa4b')();
 
    
 

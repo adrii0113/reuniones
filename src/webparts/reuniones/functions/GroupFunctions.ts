@@ -216,6 +216,18 @@ export const getTaxField = (item: any, key: keyof typeof item): ITaxField => {
   }
 
 
+
+  const getChoicesFromChoiceField = async  () => {
+
+    const list =  getSP().web.lists.getByTitle("Grupos");
+    const fields = await list.fields.getByInternalNameOrTitle("TipoGrupo")()
+    // console.log(fields.Choices)
+
+    
+    return fields
+  }
+
+
 //   const getGroupTypeChoices = () => {
 
 //     // AQUI HAY QUE RECOGER LOS CHOICES QUE HAY DISPONIBLES DENTRO DEL TIPODE GRUPO
@@ -256,5 +268,6 @@ export const GroupFunctions = {
     updateGroup,
     getTaxonomyTermsChildren,
     getGroupByNames,
-    getGroupForAttachment
+    getGroupForAttachment,
+    getChoicesFromChoiceField
 }
