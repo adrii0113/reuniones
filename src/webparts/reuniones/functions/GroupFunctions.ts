@@ -2,6 +2,7 @@
 
 import { getSP } from "../../../pnp-js-config";
 import type { IList } from "@pnp/sp/lists";
+
 // import { IItemAddResult } from '@pnp/sp/presets/all';
 
 import "@pnp/sp/fields";
@@ -31,24 +32,26 @@ const getGroupsById = async (groupId : number) => {
     const group: IGrupos = await getList().items.getById(groupId).select('*')();
 
     // const {Title,codigo,sector,denominacion,descripcion,fechaDeCreacion,TipoGrupo,Estado,defaultValues,adjuntos} = group
+    const parser = new DOMParser();
+    const parsedHTML = parser.parseFromString(group.descripcion, 'text/html');
+    const plainText = parsedHTML.body.textContent;
 
+
+    const fechaFormateada = new Date(group.fechaDeCreacion).toISOString().split('T')[0];
     const item: IGrupos= {
 
-        Title:group.Title,
-        codigo:group.codigo,
         ID:group.ID,
         sectorAsociadoId: group.sectorAsociadoId,
         denominacion: group.denominacion,
-        descripcion: group.descripcion,
-        fechaDeCreacion: group.fechaDeCreacion,
+        descripcion: plainText,
+        fechaDeCreacion: fechaFormateada,
         fechaDeFinalizacion:group.fechaDeFinalizacion,
         Ambito: group.Ambito,
         TipoGrupo: group.TipoGrupo,
-       
         Estado: group.Estado,
         Pais: group.Pais,
         Ciudad: group?.Ciudad,
-        defaultValues: true,
+        Tematic:group.Tematic
       
         
     }
@@ -70,23 +73,19 @@ const getAllGroups = async (): Promise<IGrupos[]> => {
 
     const groups: IGrupos[] = await getList().items()
     return groups.map((group) => ({
-        Title: group.Title,
-        // id: group.id,
-        codigo:group.codigo,
+       
         ID:group.ID,
         sectorAsociadoId: group.sectorAsociadoId,
         denominacion: group.denominacion,
         descripcion: group.descripcion,
         fechaDeCreacion: group.fechaDeCreacion,
         fechaDeFinalizacion: group.fechaDeFinalizacion,
-        // Ambito: group.Ambito,
         TipoGrupo: group.TipoGrupo,
-        
         Estado: group.Estado,
         Pais: group.Pais,
         Ciudad: group.Ciudad,
         Ambito:group.Ambito,
-        defaultValues: true,
+        Tematic:group.Tematic,
        
         
 
@@ -96,6 +95,7 @@ const getAllGroups = async (): Promise<IGrupos[]> => {
 
 const getGroupByName = async (name: string) => {
     // comprobar que el grupo que se esta intentando crear ya existe
+    console.log(name)
     const group : IGrupos[] =  await getList().items.select('*')()
     const result = group.filter((item) => item.denominacion === name)
 
@@ -108,7 +108,7 @@ const getGroupByName = async (name: string) => {
 const getGroupByNames = async (name: string) => {
     // comprobar que el grupo que se esta intentando crear ya existe
     const group : IGrupos[] =  await getList().items.select('*')()
-    const result = group.filter((item) => item.Title === name)
+    const result = group.filter((item) => item.denominacion === name)
 
     return result
 
@@ -123,22 +123,22 @@ const addNewGroups = async (item: IGrupos) => {
     // const field = await getList().fields.addLookup("My Field", { LookupListId: list.data.Id, LookupFieldName: "Title" });
 
 
-    const {Title,codigo,denominacion,descripcion,fechaDeCreacion,fechaDeFinalizacion,Pais,Ciudad,sectorAsociadoId,Ambito,Estado,TipoGrupo} = item;
+    const {ID,denominacion,descripcion,fechaDeCreacion,fechaDeFinalizacion,Pais,Ciudad,sectorAsociadoId,Estado,TipoGrupo,Ambito,Tematic} = item;
+ 
     const newItems = await getList().items.add({
-        Title:Title,
-        // id:id,
-        codigo:codigo,
+       
+        ID:ID,
         sectorAsociadoId:sectorAsociadoId,
         denominacion:denominacion,
         descripcion:descripcion,
         fechaDeCreacion:fechaDeCreacion,
         fechaDeFinalizacion:fechaDeFinalizacion,
         TipoGrupo:TipoGrupo,
-        // ubicacion:ubicacion,
         Estado:Estado,
         Pais:Pais,
         Ciudad:Ciudad,
-        Ambito:Ambito
+        Ambito:Ambito,
+        Tematic:Tematic
     })
 
     
@@ -170,10 +170,29 @@ const checkItemModified = async (itemId: number, currentUser: string) => {
 const updateGroup = async (itemId: number, newGroup:IGrupos) => {
 
 
-    
+    console.log(itemId)
+    console.log(newGroup)
+    const {ID,denominacion,descripcion,fechaDeCreacion,fechaDeFinalizacion,Pais,Ciudad,sectorAsociadoId,Estado,TipoGrupo,Ambito} = newGroup;
     try {
         
-        await getList().items.getById(itemId).update(newGroup)
+        await getList().items.getById(itemId).update({
+
+            // Title:Title,
+            ID:ID,
+            // codigo:codigo,
+            sectorAsociadoId:sectorAsociadoId,
+            denominacion:denominacion,
+            descripcion:descripcion,
+            fechaDeCreacion:fechaDeCreacion,
+            fechaDeFinalizacion:fechaDeFinalizacion,
+            TipoGrupo:TipoGrupo,
+            // ubicacion:ubicacion,
+            Estado:Estado,
+            Pais:Pais,
+            Ciudad:Ciudad,
+            Ambito:Ambito
+
+        })
     } catch (error) {
         console.log(error)
     }
@@ -197,21 +216,16 @@ export const getTaxField = (item: any, key: keyof typeof item): ITaxField => {
 
 
 
-  const getTaxonomyTermsChildren = async (groupId: string, termId: string)=> {
+  const getTaxonomyTermsChildren = async (groupId: string, termId: string,aid?:string)=> {
 
     // console.log((await getSP().termStore.groups.getById(groupId).sets.getById(termId).children()))
-    const terms = (await getSP().termStore.groups.getById(groupId).sets.getById(termId).children())
-    console.log(await getSP().termStore.groups.getById(groupId).sets.getById(termId).children())
+    const terms = await getSP().termStore.groups.getById(groupId).sets.getById(termId).children()
+    // console.log(await getSP().termStore.groups.getById(groupId).sets.getById(termId).children())
+
+
+    // console.log((await getSP().termStore.groups.getById(groupId).sets.getById(termId).children()))
     
-    // const newItem = await getList().items.add({
-    //     Title: "New Item Title",
-    //     TaxonomyFieldInternalName: {
-    //       __metadata: { type: "SP.Taxonomy.TaxonomyFieldValue" },
-    //       Label: this.state.selectedTerm.name,
-    //       TermGuid: this.state.selectedTerm.key,
-    //       WssId: -1 // Dejar en -1
-    //     }
-    //   });
+    
     return terms
   }
 
@@ -228,31 +242,22 @@ export const getTaxField = (item: any, key: keyof typeof item): ITaxField => {
   }
 
 
-//   const getGroupTypeChoices = () => {
+  const getTematicChoicesFromChoiceField = async () => {
+    const list =  getSP().web.lists.getByTitle("Grupos");
+    const fields = await list.fields.getByInternalNameOrTitle("Tematic")()
 
-//     // AQUI HAY QUE RECOGER LOS CHOICES QUE HAY DISPONIBLES DENTRO DEL TIPODE GRUPO
-
-//     // return choices
-//   }
-
-
+    return fields
+  }
 
 
 
 
 
 
-// const subirArchivoAdjunto = async ( listaNombre: string, elementoId: number, archivo: ArchivoAdjunto) => {
-//     try {
-//         // const lista = sp.web.lists.getByTitle(listaNombre);
-//         // const archivoAdjunto = await getSP().web.lists.getById('296e7a8d-7bf8-4173-903d-a6c2c348fa4b').items.getById(Number(elementoId)).add;
-//         const item: IItemAddResult = await getList().items.getById(elementoId).attachmentFiles.add(archivo.name, archivo.content);
-//         // console.log('Archivo adjunto subido con éxito:', archivoAdjunto);
-//     } catch (error) {
-//         console.error('Error al subir el archivo adjunto:', error);
-//     }
-// };
- 
+
+
+
+
 
 
 
@@ -269,5 +274,6 @@ export const GroupFunctions = {
     getTaxonomyTermsChildren,
     getGroupByNames,
     getGroupForAttachment,
-    getChoicesFromChoiceField
+    getChoicesFromChoiceField,
+    getTematicChoicesFromChoiceField
 }

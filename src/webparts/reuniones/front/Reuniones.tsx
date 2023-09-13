@@ -20,20 +20,20 @@ import { Stack,StackItem } from "office-ui-fabric-react";
 // }
 // import type { IList } from "@pnp/sp/lists";
 
-import { getSP } from "../../../pnp-js-config";
+// import { getSP } from "../../../pnp-js-config";
 // import { IReunionesProps } from "../components/IReunionesProps";
 import "@pnp/sp/fields";
 import Spa from './../comp1/comp1'
 // import { SectorFunctions } from "../functions/SectorFunction";
 // const SPContext = React.createContext(null);
 import "@pnp/sp/lists";
-import { SectorFunctions } from "../functions/SectorFunction";
+// import { SectorFunctions } from "../functions/SectorFunction";
 // import type { IGrupos } from "../interfaces/IGrupos";
 // import { GroupFunctions } from "../functions/GroupFunctions";
 export default function Reuniones({context}: GroupFormProps) {
 
   
-      const getList =  getSP().web.lists.getById('296e7a8d-7bf8-4173-903d-a6c2c348fa4b')();
+      // const getList =  getSP().web.lists.getById('296e7a8d-7bf8-4173-903d-a6c2c348fa4b')();
 
    
 
@@ -62,16 +62,16 @@ export default function Reuniones({context}: GroupFormProps) {
   
     // });
     
-    const tes = async () => {
+    // const tes = async () => {
 
-      // newItemFormItem.adjuntos=selectedFile
-      console.log(await getList)
-      console.log(await SectorFunctions.getSectors())
+    //   // newItemFormItem.adjuntos=selectedFile
+    //   console.log(await getList)
+    //   console.log(await SectorFunctions.getSectors())
       
       
-    }
+    // }
 
-    tes().then((items) => console.log(items)).catch(console.error)
+    // tes().then((items) => console.log(items)).catch(console.error)
 
     // // React.useEffect(()=>{
 

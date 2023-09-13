@@ -12,23 +12,21 @@ import type { ITaxField } from "../functions/GroupFunctions";
 
 
 export interface IGrupos{
-    Title: string;
-    ID: number;
-    codigo: number;
+    // Title: string;
+    ID?: number;
+    // codigo: number;
     sectorAsociadoId: number;
     denominacion: string;
     descripcion: string;
     fechaDeCreacion: string;
     fechaDeFinalizacion: string;
-    
     TipoGrupo: string;
-    // ubicacion: string;
     Estado: boolean;
     Pais: ITaxField;
     Ciudad: ITaxField;
     Ambito: ITaxField;
-    defaultValues: boolean;
-    // adjuntos:File
+    Tematic:string;
+    
     	
 
 }

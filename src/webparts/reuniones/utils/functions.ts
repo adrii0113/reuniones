@@ -18,8 +18,22 @@ const dateFormat = () =>{
 const isoDate = (date: string) =>{
 
 
+  if (date) {
     const parts = date.split('/');
+    
     return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  } else {
+    // Manejar el caso en el que date es undefined o null
+    return '';
+  }
+}
+
+
+export const dateConverter = (date: string) =>{
+  const fechaFormateada = new Date(date).toISOString().split('T')[0];
+
+
+  return fechaFormateada
 }
 
 
@@ -91,6 +105,54 @@ const checkReadPermission = (context:WebPartContext) => {
 }
 
 
+interface Objeto {
+  stateType: string;
+  nombre: string;
+}
+const validateStates = (array: Objeto[]) => {
+
+  // Inicializar un array para almacenar los stateTypes de objetos vacíos
+  const stateTypesObjetosVacios: string[] = [];
+
+  array.forEach((objeto) => {
+    if (!objeto.nombre) {
+      stateTypesObjetosVacios.push(objeto.stateType);
+    }
+  });
+
+  console.log('stateTypes de objetos vacíos:', stateTypesObjetosVacios);
+
+  // aqui hacemos la validacion de los estados
+  const objetosNoVacios = array.filter((objeto) => objeto.stateType !== undefined && objeto.nombre !== undefined && objeto.nombre.trim() !== '');
+  console.log(objetosNoVacios)
+  // console.log(array)
+
+  // esto devuelve los states que esten vacios
+  return stateTypesObjetosVacios
+
+}
+
+// error control
+interface ErorrsFormProps {
+  type:any
+  msg: string
+  errors?:Object[];
+  id:Date;
+}
+
+export const addError = (recivedMsg: string, recivedType: string) => {
+  const newError: ErorrsFormProps = {
+    type:recivedType,
+    msg: recivedMsg, // Cambia este mensaje según tus necesidades
+    id: new Date(),
+  };
+  return newError
+
+  // setErrorsStorage([...errorsStorage, newError]);
+  
+};
+
+
 export const Functions = {
     dateFormat,
     isoDate,
@@ -98,8 +160,11 @@ export const Functions = {
     buildTaxField,
     checkFullControlPermission,
     checkEditorPermission,
-    checkReadPermission
+    checkReadPermission,
     // getQueryString
+    validateStates,
+    addError,
+    dateConverter
 }
 
 

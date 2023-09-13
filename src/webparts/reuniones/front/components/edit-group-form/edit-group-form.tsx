@@ -28,20 +28,15 @@ export default function GroupFormEdit ({context }: GroupFormProps){
     React.useEffect(() => {
 
         setHaveReadPerms(Functions.checkFullControlPermission(context))
-
-        console.log(codigo)
         const test = async () => {
 
             const item= await GroupFunctions.getGroupsById(Number(codigo))
-            // console.log(item)
-            // const {descripcion} = item;
-            console.log(item)
-            // console.log(descripcion)
+            
             setGroup(item)
-            console.log(group)
+            
         }
         
-        void test()
+        test().then((item) => item).catch(console.error)
     },[])
     return (
 
@@ -50,7 +45,8 @@ export default function GroupFormEdit ({context }: GroupFormProps){
             {/* {group} */}
             {/* aqui llamo al componente de listado pasando el objeto del item que ha seleccionado */}
             {
-                haveReadPerms === true ? <GroupForm grupo={group} context={context}></GroupForm>: <GroupForm context={context}></GroupForm> 
+                haveReadPerms === true ? <GroupForm grupo={group} context={context} codigo={codigo}></GroupForm>: <GroupForm context={context}></GroupForm> 
+                
             }
             
         </div>

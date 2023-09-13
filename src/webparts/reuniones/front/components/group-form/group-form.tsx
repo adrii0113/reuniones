@@ -6,7 +6,7 @@ import { useForm  } from "react-hook-form";
 import {SubmitHandler} from "react-hook-form";
 // FUNCTIONS
 import { GroupFunctions } from "../../../functions/GroupFunctions";
-// import { SectorFunctions } from "../../../functions/SectorFunction";
+
 import { Functions } from "../../../utils/functions";
 import "@pnp/sp/fields";
 // FLUENT UI
@@ -19,45 +19,17 @@ import {
   PrimaryButton
 } from "@fluentui/react"
 
+
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle'
-import type { ITaxField } from "../../../functions/GroupFunctions";
-// import { Switch } from "@fluentui/react-components"
-// import type { SwitchProps } from "@fluentui/react-components";
-
-// import { Dropdown } from "@fluentui/react-components";
 
 
-// import type { IDropdownOption } from "office-ui-fabric-react";
+import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
+
 import { Alert } from "@fluentui/react-components/unstable";
-
-// import { TaxonomyPicker } from "@pnp/spfx-controls-react";
-
-import {  IPickerTerms } from "@pnp/spfx-controls-react/lib/TaxonomyPicker";
-export interface ISpfxPnpTaxonomypickerState {
-  tags: IPickerTerms;
-}
 
 
 // import { SPPermission } from '@microsoft/sp-page-context';
-type Inputs = {
-    example: string,
-    exampleRequired: string,
-    Title: string,
-    denominacion: string,
-    codigo: number,
-    id?:number,
-    sectorAsociado?:string,
-    nombre: string,
-    descripcion: string,
-    fechaDeCreacion: Date,
-    fechaFinalizacion: Date,
-    Estado?: boolean,
-    tipoGrupo: IDropdownOption,
-    adjunto:FileList,
-    Ciudad?:ITaxField,
-    Pais?:IDropdownOption
-  };
-// import { IGroupForm } from "./IGroupForm";
+
 import { Field } from "@fluentui/react-components";
 import { IGrupos } from "../../../interfaces/IGrupos";
 // import { IReunionesProps } from "../../../components/IReunionesProps";
@@ -65,105 +37,180 @@ import { IGrupos } from "../../../interfaces/IGrupos";
 import type { WebPartContext } from "@microsoft/sp-webpart-base";
 import { SectorFunctions } from "../../../functions/SectorFunction";
 
-const categories :IDropdownOption[] = [
-  {key: "transporte", text: "Transporte"},
-  {key: "comercio", text: "Comercio"},
-  {key: "educacion", text: "Educacion"},
-  {key: "construccion", text: "Construccion"},
-]
-
-
 
 
 
 export interface GroupFormProps {
   grupo?: IGrupos;
   context?: WebPartContext;
+  codigo?:string;
 }
 interface ErorrsFormProps {
-
+  type:any
   msg: string
+  errors?:Object[]
 
 }
 
-export function GroupForm ({ grupo, context }: GroupFormProps){
+export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
 
   
-  // const [date,setSelectedDate] = useState(Functions.dateFormat())
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedFinishDate, setSelectedFinishDate] = useState<Date | null>(null);
-  const [estado, setEstado] = useState(false);
+ 
   // USE FOORM CONFIG
-  const { register, handleSubmit,reset, watch, formState: {  } } = useForm<Inputs>();
-  // const onSubmit: SubmitHandler<Inputs> = data => console.log(data);
+  const { reset,handleSubmit, formState: {  } } = useForm();
+  
 
-  // estados de la opcion que seleccione el usuario en los seleccionables
+  // estados de la opcion que seleccione el usuario en los seleccionables idropdown
   const [sector, setSector] = useState <IDropdownOption>()
   const [tipoGrupo, setTipoGrupo] = useState <IDropdownOption>()
   const [paisSeleccionado,setPaisSeleccionado] = useState <IDropdownOption>();
   const [ciudadSeleccionada,setCiudadSeleccionada] = useState <IDropdownOption>();
   const [ambitoSeleccionada,setAmbitoSeleccionado] = useState <IDropdownOption>();
-  // const [adjuntos] = useState<File>()
+  const [tematicaSeleccionada,setTematicaSeleccionada] = useState <IDropdownOption>();
+  // estados de los valores que introduce el usuario en el formulario
+  const [denominacion,setDenominacion] = useState ('');
+  const [descripcion,setDescripcion] = useState ('');
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [fechaDeCreacion, setFechaDeCreacion] = useState('');
+  const [fechaFinal, setFechaFinal]  = useState('');
+  const [selectedFinishDate, setSelectedFinishDate] = useState<Date | null>(null);
+  const [estado, setEstado] = useState(grupo ? grupo.Estado : false);
+  
+  // estados de comprobacion de permisos y duplicidad
   const [titleExist,setTitleExist] = useState(false)
   const [haveReadPerms,setHaveReadPerms] = useState(true)
-  
 
-  // estado para almacenar los taxonomy terms
-  // state para alamacenar los items que hay en el term set de ciudades
+ 
+  // estados para almacenar las opciones taxonomy para luego mostrar en el desplegable dropdown
   const [ciudadesOptions,setCiudadesOptions] = useState<IDropdownOption[]>([])
   const [paisesOptions,setPaisesOptions] = useState<IDropdownOption[]>([])
   const [ambitosOptions,setAmbitosOptions] = useState<IDropdownOption[]>([])
   const [sectorOptions, setSectorOPtions] = useState <IDropdownOption[]>([])
   const [groupOptions, setGroupOptions] = useState <IDropdownOption[]>([])
-  // error control array 
-  const [errorsStorage,setErrorsStorage] = useState<ErorrsFormProps[]>([])
-  // const [errores, setErrores] = useState({});
+  const [tematicOptions, setTematicOptions] = useState <IDropdownOption[]>([])
+  
+  // estados para almacenar los errores de validacion del formulario
+  // const [errorsStorage,setErrorsStorage] = useState<ErorrsFormProps[]>([])
+  const [warningsStorage,setWarningsStorage] = useState<ErorrsFormProps[]>([])
+  // const [infoStorage,setInfoStorage] = useState<ErorrsFormProps[]>([])
+  // const [errores, setErrores] = useState<ErorrsFormProps[]>([]);
+  const [newItemFormItem,setNewItemFormItem] = useState<IGrupos>({
+    
+    denominacion:grupo?.denominacion || '',
+    TipoGrupo: grupo?.TipoGrupo || null,
+    descripcion:grupo?.descripcion || '',
+    Estado:grupo?.Estado || false,
+    fechaDeCreacion:grupo?.fechaDeCreacion.toString() ||   new Date().toISOString(),
+    fechaDeFinalizacion:null,
+    Pais:{TermGuid:grupo?.Pais.TermGuid||'',Label:grupo?.Pais.Label||'',WssId:grupo?.Pais.WssId || -1} ||    {TermGuid:paisSeleccionado?.data||'',Label:paisSeleccionado?.text||'',WssId:-1},
+    Ciudad:{TermGuid:ciudadSeleccionada?.data||'',Label:ciudadSeleccionada?.text||'',WssId:-1},
+    Ambito:{TermGuid:ciudadSeleccionada?.data||'',Label:ciudadSeleccionada?.text||'',WssId:-1},
+    sectorAsociadoId:grupo?.sectorAsociadoId || null,
+    Tematic:grupo?.TipoGrupo || null,
+    
+  });
+
+  useEffect(() =>{
+    setFechaDeCreacion(grupo?.fechaDeCreacion)
+    setSelectedDate(new Date(grupo?.fechaDeCreacion))
+    setFechaFinal(grupo?.fechaDeFinalizacion)
+    setSelectedFinishDate(new Date(grupo?.fechaDeFinalizacion))
+    setTipoGrupo({key:grupo?.TipoGrupo,text:grupo?.TipoGrupo})
+  },[grupo])
+
+  const [selectedCountry,setSelectedCountry] = useState ('')
+  const [selectedCity,setSelectedCity] = useState ('')
+  const [selectedAmbito,setSelectedAmbito] = useState ('')
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
  
-  const addError = (recivedMsg: string) => {
-    const newError: ErorrsFormProps = {
-      msg: recivedMsg, // Cambia este mensaje según tus necesidades
-    };
-    setErrorsStorage([...errorsStorage, newError]);
-  };
+
+  useEffect(() => {
+    if (grupo) {
+      
+     
+      console.log(grupo)
+     
+      
+    }
+
+    const testssss = async () => {
+
+      const prueba = await GroupFunctions.getTaxonomyTermsChildren('2a569ff2-2fe6-458d-990a-a3f32001ab99','00d9c3fc-e8ba-4acd-a3b1-a81f8367aea4',grupo?.Pais.TermGuid)
+      const ciudadesItem = await GroupFunctions.getTaxonomyTermsChildren('1e2cb030-5981-48aa-902f-2a338aa96107','2bc7e5fd-e09f-4fb1-87da-855111f5c1ea')
+      const ambitosItems = await GroupFunctions.getTaxonomyTermsChildren('0a21538d-4770-44e7-9b33-a3c12e173c5d','7b28f990-5011-4c37-83d6-386c1c5c44b3')
+
+
+      prueba.map((taxonomyitem) => {
+        
+          if (taxonomyitem.id === grupo?.Pais?.TermGuid ) {
+            taxonomyitem.labels.map((term) => {
+                console.log(term)
+                setSelectedCountry(term.name)
+                setPaisSeleccionado({text:term.name,data:taxonomyitem.id,key:1})
+              })
+            }
+            
+          
+            
+      })
+
+      ciudadesItem.map((taxonomyitem) => {
+        
+        if (taxonomyitem.id === grupo?.Ciudad?.TermGuid ) {
+          taxonomyitem.labels.map((term) => {
+              console.log(term)
+              setSelectedCity(term.name)
+              setCiudadSeleccionada({text:term.name,data:taxonomyitem.id,key:1})
+            })
+          }
+          
+        
+          
+    })
+
+    ambitosItems.map((taxonomyitem) => {
+        
+      if (taxonomyitem.id === grupo?.Ambito?.TermGuid ) {
+        taxonomyitem.labels.map((term) => {
+            console.log(term)
+            setSelectedAmbito(term.name)
+            setAmbitoSeleccionado({text:term.name,data:taxonomyitem.id,key:1})
+          })
+        }
+        
+      
+        
+  })
+
+    
+
+      
+    }
+
+    testssss().then((item) => item).catch( void console.error)
+      
+    
+  }, [paisesOptions]);
+
+
+
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
 
 
   const cleanStates = () => {
     setSelectedDate(null)
     setSelectedFinishDate(null)
   }
-  const [newItemFormItem,setNewItemFormItem] = useState<IGrupos>({
-    // Default object state
-    Title:"",
-    codigo:0,
-    denominacion:'',
-    TipoGrupo: null,
-    descripcion:'',
-    Estado:false,
-    fechaDeCreacion:new Date().toISOString(),
-    fechaDeFinalizacion:null,
-    defaultValues: true,
-    ID:null,
-    Pais:{TermGuid:paisSeleccionado?.data||'',Label:paisSeleccionado?.text||'',WssId:-1},
-    Ciudad:{TermGuid:ciudadSeleccionada?.data||'',Label:ciudadSeleccionada?.text||'',WssId:-1},
-    Ambito:{TermGuid:ambitoSeleccionada?.data||'',Label:ambitoSeleccionada?.text||'',WssId:-1},
-    sectorAsociadoId:null,
-
-    
-  });
-
-  const onSubmit: SubmitHandler<IGrupos> = data => setNewItemFormItem(data);
-  // const onSubmit = (data:Inputs) => {
-  //   console.log(data);
-  // };
-  console.log(watch("example","titulo")) 
-
   
 
-  //STATES
-  // const [sectores,setSectores] = useState <ISector[]>([]);
-  // const [sectoresDesplegable,setSectoresDesplegable]  = useState <IDropdownOption[]>([])
-  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const onSubmit: SubmitHandler<IGrupos> = data => setNewItemFormItem(data);
+  
+  
+
+  
+ 
 
   useEffect(() => {
 
@@ -171,6 +218,15 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
   },[newItemFormItem])
 
 
+  // useEffect(() => {
+  //   grupo ? setCiudadSeleccionada({key:grupo.Ciudad.Label,text:grupo.Ciudad.Label}) : null
+
+
+  //   // console.log(props.grupo)
+  // },[grupo])
+
+ 
+  
   
   
   useEffect(() => {
@@ -185,11 +241,12 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
     
 
       const opciones = datosOtroTipo.map((otroTipo) => ({
-        key: otroTipo.ID, // Convierte 'id' a cadena si es necesario.
+        key: otroTipo.ID, 
         text: otroTipo.Denominacion,
       }));
       
       setSectorOPtions(opciones)
+
 
       let tipoGrupos : IDropdownOption[] = []
 
@@ -204,12 +261,25 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
 
      
       setGroupOptions(tipoGrupos)
-      console.log(groupOptions)
-      // console.log(tipoGrupos)
+
+
+      let tematicas : IDropdownOption[] = []
+
+      const tematicFromApi = await GroupFunctions.getTematicChoicesFromChoiceField()
+      tematicFromApi.Choices.map((choice) => {
+        tematicas.push({key: choice,
+        text:choice})
+
+
+        
+      })
+
+
+     setTematicOptions(tematicas)
        
     }
 
-    get().then((items)=>console.log(items)).catch(console.error)
+    get().then((items)=> items).catch(console.error)
 
     // en vex de full control auqi tengo que poner el de comprobar los permisos de read
     setHaveReadPerms(Functions.checkFullControlPermission(context))
@@ -219,55 +289,10 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
   },[])
 
 
-
   
-  // end testing form
-
- 
-
-  // useEffect(() => {
-
+  useEffect(() =>{
+    
    
-  //   // setDate(new Date())
-  //   const insetNewItem = async () => {
-
-  //     // const data = new Date();
-  //     const item : IGrupos= {
-  //       Title:"Title",
-  //       // id:2,
-  //       codigo:2,
-  //       // sector:"sector",
-  //       denominacion:"denominacion",
-  //       // descripcion:"descripcion",
-  //       // fechaDeCreacion:data,
-  //       TipoGrupo:"TipoGrupo",
-  //       // ubicacion:"ubicacion",
-  //       Estado: true,
-  //       defaultValues: false
-  //     }
-
-  //    await GroupFunctions.addNewGroups(item)
-
-
-  //   }
-  //   insetNewItem().then((news) =>{console.log(news)}).catch((error) =>console.log(error))
-  //   // getSectorsFromApi().then((news) =>{console.log(news)}).catch((error) =>console.log(error))
-  // },[])
-
-  useEffect(() =>{
-
-    console.log('validacion')
-    console.log(paisSeleccionado)
-
-    
-    
-  },[newItemFormItem])
-  
-  
-  
-  useEffect(() =>{
-    
-    // console.log(context.pageContext)
    
     const gett = async () => {
 
@@ -278,30 +303,138 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
     }
 
 
-    gett().then((news) =>{console.log(news)}).catch((error) =>console.log(error))
+    gett().then((item) =>{item}).catch((error) => error)
     
   },[newItemFormItem])
+  const insetNewItem = async () => {
+
+    try {
+      
+      // asigno aqui las propiedades porq si no no me las pilla
+      const  sectorKeyNumberFormat: number = parseInt(sector?.key.toString())
+      
+      newItemFormItem.denominacion = denominacion || grupo?.denominacion
+      newItemFormItem.descripcion = descripcion || grupo?.descripcion
+      newItemFormItem.Ciudad = {TermGuid:ciudadSeleccionada?.data,Label:ciudadSeleccionada?.text,WssId:-1}
+      newItemFormItem.Pais= {TermGuid:paisSeleccionado?.data,Label:paisSeleccionado?.text,WssId:-1}
+      newItemFormItem.Ambito ={TermGuid:ambitoSeleccionada?.data,Label:ambitoSeleccionada?.text,WssId:-1}
+      newItemFormItem.Tematic= tematicaSeleccionada?.text
+      // control de fecha
+      if(selectedDate != null){newItemFormItem.fechaDeCreacion = selectedDate?.toISOString()}
+      else{
+        const currentDate = new Date();
+        const formattedDate = currentDate.toISOString()
+        newItemFormItem.fechaDeCreacion = formattedDate
+        
+      }
+      
+      
+      selectedFinishDate ? newItemFormItem.fechaDeFinalizacion = selectedFinishDate.toISOString()  : null
+      
+      
+      
+      estado === true ? newItemFormItem.Estado = true: newItemFormItem.Estado= false;
+      
+      newItemFormItem.sectorAsociadoId = sectorKeyNumberFormat
+      
+      newItemFormItem.TipoGrupo = tipoGrupo?.text
+      
+
+      const itemExiste = await GroupFunctions.getGroupByName(newItemFormItem?.denominacion)
+       
+      if (itemExiste > 0) {
+        
+        setTitleExist(true) 
+        if (!warningsStorage.some((error) => error.msg === 'El titulo del grupo ya existe en la lista' )){
+          setWarningsStorage([...warningsStorage, Functions.addError('El titulo del grupo ya existe en la lista','warning')]);
+          
+        }
+
+        // addError('El titulo del grupo ya existe en la lista', 'error')
+      } else{
 
 
-  // handlers
+        interface Objeto {
+          stateType: string;
+          nombre: string;
+        }
+       
+        // aqui envio los estados para que se validen
+        const miArray:Objeto[] = [
+          { stateType: 'Ciuad', nombre: ciudadSeleccionada?.text },
+          { stateType: 'Pais', nombre: paisSeleccionado?.text },
+          { stateType: 'TipoGrupo', nombre: tipoGrupo?.text },
+          { stateType: 'FechaDeCreacion', nombre: selectedDate?.toISOString() },
+          { stateType: 'Sector', nombre: sector?.text },
+          { stateType: 'FechaDeFinalizacion', nombre: selectedFinishDate?.toISOString() },
+          
+        ];
+        const resultadoValidaciones = Functions.validateStates(miArray)
+
+
+        if (resultadoValidaciones.length > 0) {
+          
+          if (!warningsStorage.some((error) => error.msg === 'No se puede crear el objeto porque hay los siguientes errores de validacion:' + resultadoValidaciones.map((errormsg) => errormsg))) {
+            setWarningsStorage([...warningsStorage, Functions.addError('No se puede crear el objeto porque hay los siguientes errores de validacion:' + resultadoValidaciones.map((errormsg) => errormsg),'warning')]);
+            // setErrorsStorage([]);
+          }
+          
+
+        } else{
+          
+          
+          setShowSuccessBanner(true);
+          console.log(newItemFormItem)
+          grupo ? await GroupFunctions.updateGroup(Number(codigo),newItemFormItem) : await GroupFunctions.addNewGroups(newItemFormItem)
+          
+
+          const itemCreado = await GroupFunctions.getGroupByNames(newItemFormItem.denominacion)
+          let id:number = null
+          itemCreado.map((item) => {id = item.ID})
+          
+          if(selectedFile){await GroupFunctions.getGroupForAttachment(id,selectedFile)} else{null}
+          // limpiar estados
+          cleanStates()
+           
+         
+          
+          setTitleExist(false)
+        }
+        
+        
+      }
+
+    } catch (error) {
+      console.log(error)
+    }
+    
+   
+
+
+  }
+
+
+  // *****HANDLERS*****//
   const handleSector = (_: unknown,value:IDropdownOption):void => {
 
     setSector(value)
     console.log(sector)
 
     sector !== undefined ? setSector(value) : console.log('no existe aun')
-    // console.log(date)
+    
     
   }
   const handlePais = (_: unknown,value:IDropdownOption):void=> {
     
     setPaisSeleccionado(value)
+    setSelectedCountry(value.text)
     console.log(value)
     
   }
 
   const handleCiudad = (_: unknown,value:IDropdownOption):void => {
     setCiudadSeleccionada(value)
+    setSelectedCity(value.text)
     console.log(value)
   }
 
@@ -315,7 +448,11 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
     console.log(value)
   }
 
-  
+  const handleTematica = (_: unknown,value:IDropdownOption):void => {
+    setTematicaSeleccionada(value)
+    console.log(value)
+  }
+
   // upload files
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0];
@@ -323,96 +460,65 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
     console.log(file)
   };
 
-  useEffect(() =>{
+  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const enteredDate = new Date(event.target.value);
+    setSelectedDate(enteredDate);
+    setFechaDeCreacion(Functions.isoDate(enteredDate.toString()));
+    
+  };
+
+  const handleFinishDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const enteredDate = new Date(event.target.value);
+    setSelectedFinishDate(enteredDate);
+    console.log(enteredDate.toISOString())
+  };
 
 
-    // sectores.map((sector) =>{
-    //   categories.push({key:sector.Denominacion,text:sector.Denominacion})
-    // })
-
-    // console.log(sectores)
-
-    console.log(newItemFormItem)
-    const insetNewItem = async () => {
-
-      try {
-
-        const itemExiste = await GroupFunctions.getGroupByName(newItemFormItem?.denominacion)
-        
-        if (itemExiste > 0) {
-         
-          setTitleExist(true)
-          addError('El titulo del grupo ya existe en la lista.')
-        } else{
-          
-          console.log(newItemFormItem.Ciudad)
-          // asigno aqui las propiedades porq si no no me las pilla
-          newItemFormItem.Ciudad = {TermGuid:ciudadSeleccionada?.data,Label:ciudadSeleccionada?.text,WssId:-1}
-          newItemFormItem.Pais= {TermGuid:paisSeleccionado?.data,Label:paisSeleccionado?.text,WssId:-1}
-          newItemFormItem.TipoGrupo=tipoGrupo.text
-
-          // control de fecha
-          if(selectedDate != null){newItemFormItem.fechaDeCreacion = selectedDate.toISOString()}
-          else{
-            const currentDate = new Date();
-            const formattedDate = currentDate.toISOString()
-            newItemFormItem.fechaDeCreacion = formattedDate
-          
-          }
+  const onChange = (ev: React.MouseEvent<HTMLElement>, checked: boolean)=> {
+    console.log('toggle is ' + (checked ? 'checked' : 'not checked'));
+    console.log(estado)
+    checked ? setEstado(true) : setEstado(false);
+  }
 
 
-          selectedFinishDate ? newItemFormItem.fechaDeFinalizacion = selectedFinishDate.toISOString()  : null
-
-          const  sectorKeyNumberFormat: number = parseInt(sector?.key.toString())
-          // sector != undefined ? newItemFormItem.sectorAsociado = {ID:1}:null
-
-          estado === true ? newItemFormItem.Estado = true: newItemFormItem.Estado= false;
-
-          newItemFormItem.sectorAsociadoId = sectorKeyNumberFormat
-
-          newItemFormItem.TipoGrupo = tipoGrupo.text
-          
-          await GroupFunctions.addNewGroups(newItemFormItem)
-
-          const itemCreado = await GroupFunctions.getGroupByNames(newItemFormItem.Title)
-          let id:number = null
-          itemCreado.map((item) => {id = item.ID})
-          // const items = await GroupFunctions.getGroupsById(id)
-          if(selectedFile){await GroupFunctions.getGroupForAttachment(id,selectedFile)} else{null}
-          // limpiar estados
-          cleanStates()
-           
-         
-          // await items.attachmentFiles.add('adada.text','dadas')
-          setTitleExist(false)
-        }
-
-      } catch (error) {
-        console.log(error)
-      }
-      
-     
-
-
+  const handleButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
-    
-    
-    
-    insetNewItem().then((news) =>{console.log(news)}).catch((error) =>console.log(error))
-    // aqui tambien puedo poner para que se ejecute cuando cambia el estado del form en vez del item
-  },[newItemFormItem])
+  };
+
+  const handleSubmitAction = async () => {
+
+
+    await insetNewItem()
+  }
+
+
+  // *****END-HANDLERS*****//
+  
+
+  
+
+  
+  
+  
+  
+  
 
   
   useEffect(() => {
 
 
-    const testing = async () => {
+    const assignTaxonomyTermsToDropDownOptions = async () => {
 
 
+      // recojo los terminos taxonomy porque por las versiones no puedo utilizar ipeckerterms
       const ciudadesItem = await GroupFunctions.getTaxonomyTermsChildren('1e2cb030-5981-48aa-902f-2a338aa96107','2bc7e5fd-e09f-4fb1-87da-855111f5c1ea')
       const paisesItems = await GroupFunctions.getTaxonomyTermsChildren('2a569ff2-2fe6-458d-990a-a3f32001ab99','00d9c3fc-e8ba-4acd-a3b1-a81f8367aea4')
       const ambitosItems = await GroupFunctions.getTaxonomyTermsChildren('0a21538d-4770-44e7-9b33-a3c12e173c5d','7b28f990-5011-4c37-83d6-386c1c5c44b3')
 
+     
+      
       let ciudadesArray : IDropdownOption[] = []
       ciudadesItem.map((label)=>{
 
@@ -448,6 +554,8 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
           })
         setPaisesOptions(paisesArray)
         
+        
+        
         })
 
       })
@@ -470,85 +578,96 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
         })
 
       })
-
-
-      
+ 
     }
 
-    testing().then((news) =>{console.log(news)}).catch((error) =>console.log(error))
+    assignTaxonomyTermsToDropDownOptions().then((item) =>item).catch((error) =>error)
 
-  },[])
-  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const enteredDate = new Date(event.target.value);
-    setSelectedDate(enteredDate);
-    console.log(enteredDate.toISOString())
-  };
-
-  const handleFinishDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const enteredDate = new Date(event.target.value);
-    setSelectedFinishDate(enteredDate);
-    console.log(enteredDate.toISOString())
-  };
-
-  // const handleToggle = (event: any):boolean => {
-  //   console.log(event.target)
-    
-  //   return true
-  // };
-
-  const onChange = (ev: React.MouseEvent<HTMLElement>, checked: boolean)=> {
-    console.log('toggle is ' + (checked ? 'checked' : 'not checked'));
-    console.log(estado)
-    checked ? setEstado(true) : setEstado(false);
-   
-    
-  }
+  },[grupo])
 
 
-
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const handleButtonClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
+ 
   const buttonStackTokens: IStackTokens = {
     childrenGap: 8, // Espacio entre los botones
   };
   const stackTokens: IStackTokens = { childrenGap: 20 };
+
+  
   return (
     /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
     <div className="create-group">
-   
       
-    {titleExist === true ? <Alert intent="error" action="Retry">
-      El titulo ya existe
-      {/* aqui hay que poner un valor que vaya cambiando en funcion del error que haya en el form con un state qeue tenga un string con el error */}
-    </Alert> : null}
+
     {haveReadPerms !== true ? <Alert intent="error" action="Retry">
       El usuario actual no tiene permisoss de lectura en este elemento
       
     </Alert> : null}
+    
+
+    {
+      titleExist === true ? <div>
+        
+      {/* <MessageBar
+          messageBarType={MessageBarType.warning}>
+             La denominación ya existe
+        </MessageBar> */}
+    </div> : null
+    }
+    {
+      showSuccessBanner != false ?
+      <div>
+        
+        <MessageBar
+            messageBarType={MessageBarType.success}>
+               Grupo guardado con exito
+          </MessageBar>
+      </div>
+      : null
+    }
+    {/* {
+      errorsStorage.map((error, index) => (
+
+        <div>
+          
+          <MessageBar
+            messageBarType={MessageBarType.error}>
+            {error.msg}
+          </MessageBar>
+        </div>
+        
+      ))
+      
+    } */}
+    {
+      warningsStorage.map((error, index) => (
+
+        <div>
+          <MessageBar
+              messageBarType={MessageBarType.severeWarning}>
+              {error.msg}
+          </MessageBar>
+        </div>
+        
+      ))
+    }
     <form onSubmit={handleSubmit(onSubmit)}>
     <Stack horizontal tokens={stackTokens}>
       
     
     <Stack.Item grow={1}>
    
-    {/* <Field label="Titulo">
-        <input type="text" placeholder="Titulo del grupo" required={true} {...register("Title")} value={grupo?.Title}/>
-      </Field> */}
+    
       <Field label="Denominación del grupo">
-      <input type="text" placeholder="Denominación del grupo" required={true} {...register("denominacion")} value={grupo?.denominacion}/>
+      <input type="text" placeholder={'Escribe la denominación del grupo'} required={true}    value={grupo?.denominacion} onChange={(e)=>setDenominacion(e.target.value)}/>
       </Field>
-      {/* <Field label={"Codigo de grupo"} title="codigo">
-        <input type="text" name="codigo" {...register("codigo")} value={grupo?.codigo}/>
-      </Field> */}
+      
       <Field label="Descripcion">
-        <textarea placeholder="Descripción del sector"  name="descripcion" {...register("descripcion")} value={grupo?.descripcion}/>
+        <textarea placeholder="Descripción del sector"  name="descripcion"  value={grupo?.descripcion}  onChange={(e)=>setDescripcion(e.target.value)}/>
       </Field>
+      {fechaDeCreacion}
+      {fechaFinal}
       <Field label='Fecha de creación'>
-        <input type="date"   name="fechaDeCreacion" onChange={handleDateChange}/>
+        <input type="date" name="fechaDeCreacion" placeholder={fechaDeCreacion}  onChange={handleDateChange} required={true}/>
       </Field>
 
       <Field label='Fecha de finalización'>
@@ -557,6 +676,19 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
 
       <Toggle label="Estado" onText="Activo" offText="Inactivo" onChange={onChange}  />
       
+      <Field label='Sector'>
+      <Dropdown
+        placeholder="Seleccione un sector"
+        
+        defaultSelectedKey={grupo?.sectorAsociadoId}
+        options={sectorOptions}
+
+        onChange={handleSector.bind(this)}
+        // selectedKey={category?.key}
+        // selectedKey={grupo?.sector.Denominacion}
+        
+      />
+      </Field>
       </Stack.Item>
 
       {/* Columna 2 */}
@@ -570,79 +702,96 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
         <PrimaryButton>Botón 2</PrimaryButton>
         <PrimaryButton>Botón 3</PrimaryButton>
       </Stack>
-      <Field label='Sector'>
-      <Dropdown
-        placeholder="Seleccione un sector"
-        
-        options={sectorOptions}
-        required={true}
-        // {...register("sectorAsociado")}
-        onChange={handleSector.bind(this)}
-        // selectedKey={category?.key}
-        // selectedKey={grupo?.sector.Denominacion}
-        
-      />
-      </Field>
+
+    
+      
 
       <Field label='Tipo de grupo'>
       <Dropdown
         placeholder="Seleccione un grupo"
+        defaultSelectedKey={grupo?.TipoGrupo}
         options={groupOptions}
-        // {...register("tipoGrupo")}
         onChange={handleTipoGrupo}
-        selectedKey={tipoGrupo?.key}
         
       />
       </Field>
 
-
+      {paisSeleccionado?.text}
+      
       <Field label='Temática'>
       <Dropdown
         placeholder="Seleccione una temática"
-        defaultValue={'a'}
-        options={categories}
-        onChange={()=>handleSector}
-        
+        defaultSelectedKey={grupo?.Tematic}
+        options={tematicOptions}
+        onChange={handleTematica}
         
       />
       </Field>
 
       <Field label='País'>
-      <Dropdown
-        placeholder="Seleccione un país"
-        defaultValue={paisSeleccionado?.text}
-        options={paisesOptions}
-        // selectedKey={paisSeleccionado?.key}
-        defaultSelectedKey={paisSeleccionado?.key}
-
-        onChange={handlePais.bind(this)}
-        // {...register("Pais")}
-      />
+      {grupo ? <Dropdown
+      // placeholder={selectedCountry}
+      selectedKey={selectedCountry}
+      options={paisesOptions}
+      
+      
+      onChange={handlePais.bind(this)}
+      ></Dropdown> : <Dropdown
+      placeholder='Seleecione una ciudad'
+      // defaultSelectedKey={selected}
+      options={paisesOptions}
+      // selectedKey={selectedCountry || ''}
+      
+      onChange={handlePais.bind(this)}
+      ></Dropdown>}
+      
+      
       </Field>
+    
 
       <Field label='Ciudad'>
-      <Dropdown
-        placeholder="Seleccione una ciudad"
-        
-        options={ciudadesOptions}
-        // selectedKey={ciudadSeleccionada?.text}
-        {...register("Ciudad")}
-        defaultSelectedKey={'Palencia'}
-        onChange={handleCiudad}
-        
-      />
+          {grupo ? <Dropdown
+            selectedKey={selectedCity}
+            options={ciudadesOptions}
+            onChange={handleCiudad}
+            
+            /> : <Dropdown
+            placeholder="Seleccione una ciudad"
+            options={ciudadesOptions}
+            onChange={handleCiudad}
+      
+          
+          />
+          }
+      
       </Field>
       <Field label='Ambito'>
-      <Dropdown
-        placeholder="Selecciona uno o varios ambitos"
+      {grupo?.Ambito ? <Dropdown
+        placeholder={selectedAmbito}
+        options={ambitosOptions}
+        selectedKey={selectedAmbito}
+        onChange={handleAmbito}
+      /> : <Dropdown
+      placeholder="Seleccione una ciudad"
+      
+      
+      options={ambitosOptions}
+      
+      onChange={handleAmbito}
+      
+      
+      
+    />
+    }
+      {/* <Dropdown
+        
+        placeholder={'Seleccione un ambito'}
         
         options={ambitosOptions}
-        // selectedKey={ciudadSeleccionada?.text}
-        // {...register("Ciudad")}
-        // defaultSelectedKey={'Palencia'}
+       
         onChange={handleAmbito}
         
-      />
+      /> */}
       </Field>
 
 
@@ -664,12 +813,16 @@ export function GroupForm ({ grupo, context }: GroupFormProps){
       {/* {errors.exampleRequired && <span>This field is required</span>} */}
       
       
-      <PrimaryButton type="submit">Guardar</PrimaryButton>
+      {/* En el caso de que el grupo venga por parametros significa que estamos editando un grupo por lo que el boton sera editar y no crear */}
+      {grupo ? (<PrimaryButton onClick={handleSubmitAction} type="submit">Editar</PrimaryButton>) : (<PrimaryButton onClick={handleSubmitAction} type="submit">Guardar</PrimaryButton>) }
+      
       
       </Stack.Item>
       
     </Stack>
       </form>
+
+    
     
   
     </div>
