@@ -30,3 +30,27 @@ export interface IGrupos{
     	
 
 }
+
+
+export interface IGruposSimplificated{
+    
+    ID?: number;
+    
+    sectorAsociadoId: number;
+    denominacion: string;
+    descripcion: string;
+    fechaDeCreacion: string;
+    fechaDeFinalizacion: string;
+    TipoGrupo: string;
+    Estado: boolean;
+    Pais: string;
+    Ciudad: string;
+    Ambito: string;
+    Tematic:string;
+    
+    	
+
+}
+
+
+

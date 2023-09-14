@@ -124,14 +124,14 @@ const addNewGroups = async (item: IGrupos) => {
 
 
     const {ID,denominacion,descripcion,fechaDeCreacion,fechaDeFinalizacion,Pais,Ciudad,sectorAsociadoId,Estado,TipoGrupo,Ambito,Tematic} = item;
- 
+    const fechaFormateada = new Date(fechaDeCreacion).toISOString().split('T')[0];
     const newItems = await getList().items.add({
        
         ID:ID,
         sectorAsociadoId:sectorAsociadoId,
         denominacion:denominacion,
         descripcion:descripcion,
-        fechaDeCreacion:fechaDeCreacion,
+        fechaDeCreacion:fechaFormateada,
         fechaDeFinalizacion:fechaDeFinalizacion,
         TipoGrupo:TipoGrupo,
         Estado:Estado,

@@ -3,12 +3,6 @@ import * as React from "react"
 import { IGrupos } from "../../../interfaces/IGrupos"
 import { GroupServices } from "../../../services/GroupServices";
 import { Link } from "react-router-dom";
-// import { GroupFunctions } from "../../../functions/GroupFunctions";
-// import { URLSearchParams } from 'url';
-
-// test
-
-
 
 
 

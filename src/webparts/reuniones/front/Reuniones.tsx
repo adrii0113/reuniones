@@ -10,9 +10,9 @@ import { Stack,StackItem } from "office-ui-fabric-react";
 
   import { GroupFormProps } from "./components/group-form/group-form";
   import GroupFormEdit from './components/edit-group-form/edit-group-form'
-  import GroupList from "./components/group-list/group-list";
+  // import GroupList from "./components/group-list/group-list";
   import { GroupForm } from "./components/group-form/group-form";
-
+  import GroupDetailList from "./components/group-detail-list/group-detail-list";
 
 
 // export interface IContextProps {
@@ -168,7 +168,7 @@ export default function Reuniones({context}: GroupFormProps) {
             
             path='/list'
             exact={true}
-            component={()=><GroupList/>}
+            component={()=><GroupDetailList/>}
             
             >
             

@@ -133,7 +133,7 @@ const validateStates = (array: Objeto[]) => {
 }
 
 // error control
-interface ErorrsFormProps {
+interface WarningFormProps {
   type:any
   msg: string
   errors?:Object[];
@@ -141,7 +141,7 @@ interface ErorrsFormProps {
 }
 
 export const addError = (recivedMsg: string, recivedType: string) => {
-  const newError: ErorrsFormProps = {
+  const newError: WarningFormProps = {
     type:recivedType,
     msg: recivedMsg, // Cambia este mensaje según tus necesidades
     id: new Date(),

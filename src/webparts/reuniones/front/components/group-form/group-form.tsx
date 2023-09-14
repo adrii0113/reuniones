@@ -18,7 +18,7 @@ import {
   IStackTokens,
   PrimaryButton
 } from "@fluentui/react"
-
+import {useHistory} from "react-router-dom"
 
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle'
 
@@ -46,7 +46,7 @@ export interface GroupFormProps {
   codigo?:string;
 }
 interface ErorrsFormProps {
-  type:any
+  type?:any
   msg: string
   errors?:Object[]
 
@@ -55,7 +55,7 @@ interface ErorrsFormProps {
 export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
 
   
- 
+  const history = useHistory()
   // USE FOORM CONFIG
   const { reset,handleSubmit, formState: {  } } = useForm();
   
@@ -73,7 +73,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [fechaDeCreacion, setFechaDeCreacion] = useState('');
-  const [fechaFinal, setFechaFinal]  = useState('');
+  // const [fechaFinal, setFechaFinal]  = useState('');
   const [selectedFinishDate, setSelectedFinishDate] = useState<Date | null>(null);
   const [estado, setEstado] = useState(grupo ? grupo.Estado : false);
   
@@ -91,7 +91,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
   const [tematicOptions, setTematicOptions] = useState <IDropdownOption[]>([])
   
   // estados para almacenar los errores de validacion del formulario
-  // const [errorsStorage,setErrorsStorage] = useState<ErorrsFormProps[]>([])
+  const [errorsStorage,setErrorsStorage] = useState<ErorrsFormProps[]>([])
   const [warningsStorage,setWarningsStorage] = useState<ErorrsFormProps[]>([])
   // const [infoStorage,setInfoStorage] = useState<ErorrsFormProps[]>([])
   // const [errores, setErrores] = useState<ErorrsFormProps[]>([]);
@@ -111,10 +111,11 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
     
   });
 
+  // recoger los datos del item que selecciona en la lista
   useEffect(() =>{
     setFechaDeCreacion(grupo?.fechaDeCreacion)
     setSelectedDate(new Date(grupo?.fechaDeCreacion))
-    setFechaFinal(grupo?.fechaDeFinalizacion)
+    // setFechaFinal(grupo?.fechaDeFinalizacion)
     setSelectedFinishDate(new Date(grupo?.fechaDeFinalizacion))
     setTipoGrupo({key:grupo?.TipoGrupo,text:grupo?.TipoGrupo})
   },[grupo])
@@ -134,7 +135,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
      
       
     }
-
+    // funcion para comprobar que el taxonomy item que seleeciona el usuario coincide con uno de las opciones que existen en el term store de sharepoint
     const testssss = async () => {
 
       const prueba = await GroupFunctions.getTaxonomyTermsChildren('2a569ff2-2fe6-458d-990a-a3f32001ab99','00d9c3fc-e8ba-4acd-a3b1-a81f8367aea4',grupo?.Pais.TermGuid)
@@ -152,8 +153,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
               })
             }
             
-          
-            
+
       })
 
       ciudadesItem.map((taxonomyitem) => {
@@ -166,8 +166,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
             })
           }
           
-        
-          
+
     })
 
     ambitosItems.map((taxonomyitem) => {
@@ -180,20 +179,16 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
           })
         }
         
-      
         
   })
 
-    
 
-      
     }
 
     testssss().then((item) => item).catch( void console.error)
       
     
   }, [paisesOptions]);
-
 
 
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
@@ -209,8 +204,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
   
   
 
-  
- 
+
 
   useEffect(() => {
 
@@ -218,15 +212,6 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
   },[newItemFormItem])
 
 
-  // useEffect(() => {
-  //   grupo ? setCiudadSeleccionada({key:grupo.Ciudad.Label,text:grupo.Ciudad.Label}) : null
-
-
-  //   // console.log(props.grupo)
-  // },[grupo])
-
- 
-  
   
   
   useEffect(() => {
@@ -306,6 +291,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
     gett().then((item) =>{item}).catch((error) => error)
     
   },[newItemFormItem])
+
   const insetNewItem = async () => {
 
     try {
@@ -320,7 +306,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       newItemFormItem.Ambito ={TermGuid:ambitoSeleccionada?.data,Label:ambitoSeleccionada?.text,WssId:-1}
       newItemFormItem.Tematic= tematicaSeleccionada?.text
       // control de fecha
-      if(selectedDate != null){newItemFormItem.fechaDeCreacion = selectedDate?.toISOString()}
+      if(selectedDate != null){newItemFormItem.fechaDeCreacion = selectedDate.toISOString()}
       else{
         const currentDate = new Date();
         const formattedDate = currentDate.toISOString()
@@ -375,7 +361,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
         if (resultadoValidaciones.length > 0) {
           
           if (!warningsStorage.some((error) => error.msg === 'No se puede crear el objeto porque hay los siguientes errores de validacion:' + resultadoValidaciones.map((errormsg) => errormsg))) {
-            setWarningsStorage([...warningsStorage, Functions.addError('No se puede crear el objeto porque hay los siguientes errores de validacion:' + resultadoValidaciones.map((errormsg) => errormsg),'warning')]);
+            setWarningsStorage([ Functions.addError('No se puede crear el objeto porque hay los siguientes errores de validacion:' + resultadoValidaciones.map((errormsg) => errormsg),'warning')]);
             // setErrorsStorage([]);
           }
           
@@ -405,7 +391,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       }
 
     } catch (error) {
-      console.log(error)
+      setErrorsStorage([...errorsStorage, Functions.addError(error,'error')]);
     }
     
    
@@ -489,23 +475,16 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
 
   const handleSubmitAction = async () => {
 
-
     await insetNewItem()
+
+    
   }
 
 
   // *****END-HANDLERS*****//
   
 
-  
 
-  
-  
-  
-  
-  
-
-  
   useEffect(() => {
 
 
@@ -523,8 +502,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       ciudadesItem.map((label)=>{
 
       
-        ciudadesArray.push({key: '',
-          text:'',data: label.id})
+        
         label.labels.map((labelsName)=>{
 
 
@@ -554,8 +532,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
           })
         setPaisesOptions(paisesArray)
         
-        
-        
+
         })
 
       })
@@ -624,7 +601,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       </div>
       : null
     }
-    {/* {
+    {
       errorsStorage.map((error, index) => (
 
         <div>
@@ -637,7 +614,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
         
       ))
       
-    } */}
+    }
     {
       warningsStorage.map((error, index) => (
 
@@ -658,20 +635,20 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
    
     
       <Field label="Denominación del grupo">
-      <input type="text" placeholder={'Escribe la denominación del grupo'} required={true}    value={grupo?.denominacion} onChange={(e)=>setDenominacion(e.target.value)}/>
+      <input type="text" placeholder={'Escribe la denominación del grupo'}  value={grupo?.denominacion} onChange={(e)=>setDenominacion(e.target.value)}/>
       </Field>
       
       <Field label="Descripcion">
         <textarea placeholder="Descripción del sector"  name="descripcion"  value={grupo?.descripcion}  onChange={(e)=>setDescripcion(e.target.value)}/>
       </Field>
-      {fechaDeCreacion}
-      {fechaFinal}
+      {/* {fechaDeCreacion}
+      {fechaFinal} */}
       <Field label='Fecha de creación'>
-        <input type="date" name="fechaDeCreacion" placeholder={fechaDeCreacion}  onChange={handleDateChange} required={true}/>
+        <input type="date" name="fechaDeCreacion" placeholder={fechaDeCreacion} required={true} onChange={handleDateChange}/>
       </Field>
 
       <Field label='Fecha de finalización'>
-        <input type="date"  name="fechaFinalizacion" onChange={handleFinishDateChange} />
+        <input type="date"  name="fechaFinalizacion" required={true} onChange={handleFinishDateChange} />
       </Field>
 
       <Toggle label="Estado" onText="Activo" offText="Inactivo" onChange={onChange}  />
@@ -698,14 +675,11 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
         {/* Contenido de la segunda columna */}
         
         <Stack horizontal tokens={buttonStackTokens}>
-        <PrimaryButton>Botón 1</PrimaryButton>
-        <PrimaryButton>Botón 2</PrimaryButton>
-        <PrimaryButton>Botón 3</PrimaryButton>
+        {grupo ? (<PrimaryButton onClick={handleSubmitAction} type="submit">Editar</PrimaryButton>) : (<PrimaryButton onClick={handleSubmitAction} type="submit">Guardar</PrimaryButton>) }
+        <PrimaryButton onClick={()=>history.push('/list')}>Cancelar</PrimaryButton>
       </Stack>
 
     
-      
-
       <Field label='Tipo de grupo'>
       <Dropdown
         placeholder="Seleccione un grupo"
@@ -716,8 +690,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       />
       </Field>
 
-      {paisSeleccionado?.text}
-      
+
       <Field label='Temática'>
       <Dropdown
         placeholder="Seleccione una temática"
@@ -730,7 +703,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
 
       <Field label='País'>
       {grupo ? <Dropdown
-      // placeholder={selectedCountry}
+      
       selectedKey={selectedCountry}
       options={paisesOptions}
       
@@ -738,10 +711,8 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       onChange={handlePais.bind(this)}
       ></Dropdown> : <Dropdown
       placeholder='Seleecione una ciudad'
-      // defaultSelectedKey={selected}
       options={paisesOptions}
-      // selectedKey={selectedCountry || ''}
-      
+     
       onChange={handlePais.bind(this)}
       ></Dropdown>}
       
@@ -783,15 +754,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       
     />
     }
-      {/* <Dropdown
-        
-        placeholder={'Seleccione un ambito'}
-        
-        options={ambitosOptions}
-       
-        onChange={handleAmbito}
-        
-      /> */}
+     
       </Field>
 
 
@@ -799,23 +762,12 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       <input
         type="file"
         ref={fileInputRef}
-        style={{ display: 'none' , width: '50%'}}
+        style={{ display: 'none' , width: '10%'}}
         onChange={handleFileChange}
       />
       <PrimaryButton onClick={handleButtonClick}>Examinar archivo</PrimaryButton>
-        
-        
         {selectedFile && <p>Selected File: {selectedFile.name}</p>}
       </Field>
-      {/* include validation with required or other standard HTML validation rules */}
-      {/* <input {...register("exampleRequired", { required: true })} /> */}
-      {/* errors will return when field validation fails  */}
-      {/* {errors.exampleRequired && <span>This field is required</span>} */}
-      
-      
-      {/* En el caso de que el grupo venga por parametros significa que estamos editando un grupo por lo que el boton sera editar y no crear */}
-      {grupo ? (<PrimaryButton onClick={handleSubmitAction} type="submit">Editar</PrimaryButton>) : (<PrimaryButton onClick={handleSubmitAction} type="submit">Guardar</PrimaryButton>) }
-      
       
       </Stack.Item>
       
