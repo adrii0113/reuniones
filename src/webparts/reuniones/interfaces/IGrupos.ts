@@ -36,7 +36,6 @@ export interface IGruposSimplificated{
     
     ID?: number;
     
-    sectorAsociadoId: number;
     denominacion: string;
     descripcion: string;
     fechaDeCreacion: string;
@@ -47,6 +46,7 @@ export interface IGruposSimplificated{
     Ciudad: string;
     Ambito: string;
     Tematic:string;
+    sectorAsociado: string;
     
     	
 

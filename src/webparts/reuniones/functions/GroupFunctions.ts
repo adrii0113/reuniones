@@ -71,9 +71,15 @@ const getGroupForAttachment = async (groupId : number, file: File) => {
 
 const getAllGroups = async (): Promise<IGrupos[]> => {
 
+    
     const groups: IGrupos[] = await getList().items()
+
+
+    
+
+
     return groups.map((group) => ({
-       
+
         ID:group.ID,
         sectorAsociadoId: group.sectorAsociadoId,
         denominacion: group.denominacion,

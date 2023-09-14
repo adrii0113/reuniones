@@ -15,6 +15,7 @@ import {
     IDetailsListStyles,
     IColumn 
   } from "office-ui-fabric-react";
+import { SectorFunctions } from "../../../functions/SectorFunction"
  
 
 
@@ -55,12 +56,12 @@ const columns: IColumn[] = [
   { key: 'fechaDeCreacion', name: 'Fecha creacion', fieldName: 'fechaDeCreacion', minWidth: 100, maxWidth: 200, isResizable: true },
   { key: 'fechaDeFinalizacion', name: 'Fecha final', fieldName: 'fechaDeFinalizacion', minWidth: 100, maxWidth: 200, isResizable: true },
   { key: 'estadi', name: 'Estado', fieldName: 'Estado', minWidth: 100, maxWidth: 200, isResizable: true },
-  { key: 'TipoGrupo', name: 'Tipo de grupo', fieldName: 'TipoGrupo', minWidth: 100, maxWidth: 200, isResizable: true },
   { key: 'Pais', name: 'Pais', fieldName: 'Pais', minWidth: 100, maxWidth: 200, isResizable: true },
-  { key: 'Ambito', name: 'Ambito', fieldName: 'Ambito', minWidth: 100, maxWidth: 200, isResizable: true },
   { key: 'Ciudad', name: 'Ciudad', fieldName: 'Ciudad', minWidth: 100, maxWidth: 200, isResizable: true },
-  { key: 'sectorAsociado', name: 'Tipo de grupo', fieldName: 'sectorAsociado', minWidth: 100, maxWidth: 200, isResizable: true },
+  { key: 'Ambito', name: 'Ambito', fieldName: 'Ambito', minWidth: 100, maxWidth: 200, isResizable: true },
   { key: 'Tematica', name: 'Tematica', fieldName: 'Tematic', minWidth: 100, maxWidth: 200, isResizable: true },
+  { key: 'TipoGrupo', name: 'TipoGrupo', fieldName: 'TipoGrupo', minWidth: 100, maxWidth: 200, isResizable: true },
+  { key: 'sectorAsociado', name: 'sectorAsociado', fieldName: 'sectorAsociado', minWidth: 100, maxWidth: 200, isResizable: true },
 ];
 
  
@@ -76,13 +77,14 @@ const columns: IColumn[] = [
           const prueba = await GroupFunctions.getTaxonomyTermsChildren('2a569ff2-2fe6-458d-990a-a3f32001ab99','00d9c3fc-e8ba-4acd-a3b1-a81f8367aea4')
           const ciudadesItem = await GroupFunctions.getTaxonomyTermsChildren('1e2cb030-5981-48aa-902f-2a338aa96107','2bc7e5fd-e09f-4fb1-87da-855111f5c1ea')
           const ambitosItems = await GroupFunctions.getTaxonomyTermsChildren('0a21538d-4770-44e7-9b33-a3c12e173c5d','7b28f990-5011-4c37-83d6-386c1c5c44b3')
+          const datosOtroTipo = await SectorFunctions.getSectors();
 
 
             GroupFunctions.getAllGroups()
                 .then(
                     (group)=>{
                         setGroups(group)
-                        // console.log(group)
+                        console.log(group)
 
                       
                         group.map((itemGroup) => {
@@ -125,6 +127,15 @@ const columns: IColumn[] = [
                                   
                                   
                                 })
+                                let sector:string =''
+                                datosOtroTipo.map((choiceOption)=>{
+
+                                  if(choiceOption.ID === itemGroup.sectorAsociadoId){
+                                    sector=choiceOption.Denominacion
+                                    console.log(sector)
+                                  }
+
+                                })
 
                             const grupoSimplificado: IGruposSimplificated = {
                               ID:itemGroup.ID,
@@ -137,7 +148,7 @@ const columns: IColumn[] = [
                               Pais:itemGroup.Pais?.Label,
                               Ciudad:itemGroup.Ciudad?.Label,
                               Ambito:itemGroup.Ambito?.Label,
-                              sectorAsociadoId:null,
+                              sectorAsociado:sector,
                               Tematic: itemGroup.Tematic
                             };
                             
@@ -162,10 +173,14 @@ const columns: IColumn[] = [
          getDataFromApi().then((news) =>{news}).catch((error) =>console.error)
     },[])
 
+    useEffect(()=>{
+      console.log(arrayDeGruposSimplificados)
+    },[arrayDeGruposSimplificados])
+
     return (
 
 <div>
-      <h1 >Item list</h1>
+      <h1 >Listado de grupos</h1>
       <DetailsList
         columns={columns}
         items={arrayDeGruposSimplificadosState}
