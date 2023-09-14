@@ -33,19 +33,20 @@ const getGroupsById = async (groupId : number) => {
 
     // const {Title,codigo,sector,denominacion,descripcion,fechaDeCreacion,TipoGrupo,Estado,defaultValues,adjuntos} = group
     const parser = new DOMParser();
-    const parsedHTML = parser.parseFromString(group.descripcion, 'text/html');
+    const parsedHTML = parser.parseFromString(group?.descripcion, 'text/html');
     const plainText = parsedHTML.body.textContent;
 
 
-    const fechaFormateada = new Date(group.fechaDeCreacion).toISOString().split('T')[0];
+    const fechaInicioFormateada = new Date(group?.fechaDeCreacion).toISOString().split('T')[0];
+    const fechaFinalFormateada = new Date(group?.fechaDeFinalizacion).toISOString().split('T')[0];
     const item: IGrupos= {
 
         ID:group.ID,
         sectorAsociadoId: group.sectorAsociadoId,
         denominacion: group.denominacion,
         descripcion: plainText,
-        fechaDeCreacion: fechaFormateada,
-        fechaDeFinalizacion:group.fechaDeFinalizacion,
+        fechaDeCreacion: fechaInicioFormateada,
+        fechaDeFinalizacion:fechaFinalFormateada,
         Ambito: group.Ambito,
         TipoGrupo: group.TipoGrupo,
         Estado: group.Estado,
@@ -101,7 +102,7 @@ const getAllGroups = async (): Promise<IGrupos[]> => {
 
 const getGroupByName = async (name: string) => {
     // comprobar que el grupo que se esta intentando crear ya existe
-    console.log(name)
+    
     const group : IGrupos[] =  await getList().items.select('*')()
     const result = group.filter((item) => item.denominacion === name)
 
@@ -131,6 +132,7 @@ const addNewGroups = async (item: IGrupos) => {
 
     const {ID,denominacion,descripcion,fechaDeCreacion,fechaDeFinalizacion,Pais,Ciudad,sectorAsociadoId,Estado,TipoGrupo,Ambito,Tematic} = item;
     const fechaFormateada = new Date(fechaDeCreacion).toISOString().split('T')[0];
+    const fechaFormateadafinal = new Date(fechaDeFinalizacion).toISOString().split('T')[0];
     const newItems = await getList().items.add({
        
         ID:ID,
@@ -138,7 +140,7 @@ const addNewGroups = async (item: IGrupos) => {
         denominacion:denominacion,
         descripcion:descripcion,
         fechaDeCreacion:fechaFormateada,
-        fechaDeFinalizacion:fechaDeFinalizacion,
+        fechaDeFinalizacion:fechaFormateadafinal,
         TipoGrupo:TipoGrupo,
         Estado:Estado,
         Pais:Pais,

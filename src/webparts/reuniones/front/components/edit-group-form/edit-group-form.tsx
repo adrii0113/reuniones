@@ -42,7 +42,7 @@ export default function GroupFormEdit ({context }: GroupFormProps){
 
 
         <div>
-            {/* {group} */}
+            
             {/* aqui llamo al componente de listado pasando el objeto del item que ha seleccionado */}
             {
                 haveReadPerms === true ? <GroupForm grupo={group} context={context} codigo={codigo}></GroupForm>: <GroupForm context={context}></GroupForm> 

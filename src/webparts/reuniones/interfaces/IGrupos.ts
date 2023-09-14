@@ -17,9 +17,9 @@ export interface IGrupos{
     // codigo: number;
     sectorAsociadoId: number;
     denominacion: string;
-    descripcion: string;
+    descripcion?: string;
     fechaDeCreacion: string;
-    fechaDeFinalizacion: string;
+    fechaDeFinalizacion?: string;
     TipoGrupo: string;
     Estado: boolean;
     Pais: ITaxField;

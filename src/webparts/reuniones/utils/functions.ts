@@ -108,6 +108,8 @@ const checkReadPermission = (context:WebPartContext) => {
 interface Objeto {
   stateType: string;
   nombre: string;
+  estado?:boolean;
+  date?:Date;
 }
 const validateStates = (array: Objeto[]) => {
 
@@ -118,6 +120,16 @@ const validateStates = (array: Objeto[]) => {
     if (!objeto.nombre) {
       stateTypesObjetosVacios.push(objeto.stateType);
     }
+
+    if (objeto.estado === null) {
+      stateTypesObjetosVacios.push(objeto.stateType);
+    }
+
+    if (objeto.date === null) {
+      stateTypesObjetosVacios.push(objeto.stateType);
+    }
+
+
   });
 
   console.log('stateTypes de objetos vacíos:', stateTypesObjetosVacios);

@@ -52,6 +52,13 @@ interface ErorrsFormProps {
 
 }
 
+interface Objeto {
+  stateType: string;
+  nombre: string;
+  estado?:boolean
+  date?:Date
+}
+
 export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
 
   
@@ -73,9 +80,9 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [fechaDeCreacion, setFechaDeCreacion] = useState('');
-  // const [fechaFinal, setFechaFinal]  = useState('');
+  const [fechaFinal, setFechaFinal]  = useState('');
   const [selectedFinishDate, setSelectedFinishDate] = useState<Date | null>(null);
-  const [estado, setEstado] = useState(grupo ? grupo.Estado : false);
+  const [estado, setEstado] = useState(null);
   
   // estados de comprobacion de permisos y duplicidad
   const [titleExist,setTitleExist] = useState(false)
@@ -113,16 +120,25 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
 
   // recoger los datos del item que selecciona en la lista
   useEffect(() =>{
+    setDenominacion(grupo?.denominacion)
+    setDescripcion(grupo?.descripcion)
+
     setFechaDeCreacion(grupo?.fechaDeCreacion)
+    setFechaFinal(grupo?.fechaDeFinalizacion)
+
     setSelectedDate(new Date(grupo?.fechaDeCreacion))
-    // setFechaFinal(grupo?.fechaDeFinalizacion)
     setSelectedFinishDate(new Date(grupo?.fechaDeFinalizacion))
+
     setTipoGrupo({key:grupo?.TipoGrupo,text:grupo?.TipoGrupo})
+    setTematicaSeleccionada({key:grupo?.Tematic,text:grupo?.Tematic})
+
+    setEstado(grupo?.Estado)
   },[grupo])
 
   const [selectedCountry,setSelectedCountry] = useState ('')
   const [selectedCity,setSelectedCity] = useState ('')
   const [selectedAmbito,setSelectedAmbito] = useState ('')
+  const [selectedSector,setSelectedSector] = useState ('')
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
  
@@ -141,7 +157,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       const prueba = await GroupFunctions.getTaxonomyTermsChildren('2a569ff2-2fe6-458d-990a-a3f32001ab99','00d9c3fc-e8ba-4acd-a3b1-a81f8367aea4',grupo?.Pais.TermGuid)
       const ciudadesItem = await GroupFunctions.getTaxonomyTermsChildren('1e2cb030-5981-48aa-902f-2a338aa96107','2bc7e5fd-e09f-4fb1-87da-855111f5c1ea')
       const ambitosItems = await GroupFunctions.getTaxonomyTermsChildren('0a21538d-4770-44e7-9b33-a3c12e173c5d','7b28f990-5011-4c37-83d6-386c1c5c44b3')
-
+      
 
       prueba.map((taxonomyitem) => {
         
@@ -182,6 +198,8 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
         
   })
 
+  
+
 
     }
 
@@ -189,6 +207,29 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       
     
   }, [paisesOptions]);
+
+
+  useEffect(()=>{
+    const testssss = async () => {
+
+
+
+    const datosOtroTipo = await SectorFunctions.getSectors();
+    let sector:string =''
+    datosOtroTipo.map((choiceOption)=>{
+
+      if(choiceOption.ID === grupo?.sectorAsociadoId){
+        console.log(choiceOption.Denominacion)
+        sector=choiceOption.Denominacion
+        setSelectedSector(sector)
+        setSector({text:sector,key:grupo?.sectorAsociadoId})
+      }
+  
+    })
+    }
+    testssss().then((item) => item).catch( void console.error)
+
+  },[sectorOptions])
 
 
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
@@ -314,10 +355,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
         
       }
       
-      
       selectedFinishDate ? newItemFormItem.fechaDeFinalizacion = selectedFinishDate.toISOString()  : null
-      
-      
       
       estado === true ? newItemFormItem.Estado = true: newItemFormItem.Estado= false;
       
@@ -325,50 +363,6 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       
       newItemFormItem.TipoGrupo = tipoGrupo?.text
       
-
-      const itemExiste = await GroupFunctions.getGroupByName(newItemFormItem?.denominacion)
-       
-      if (itemExiste > 0) {
-        
-        setTitleExist(true) 
-        if (!warningsStorage.some((error) => error.msg === 'El titulo del grupo ya existe en la lista' )){
-          setWarningsStorage([...warningsStorage, Functions.addError('El titulo del grupo ya existe en la lista','warning')]);
-          
-        }
-
-        // addError('El titulo del grupo ya existe en la lista', 'error')
-      } else{
-
-
-        interface Objeto {
-          stateType: string;
-          nombre: string;
-        }
-       
-        // aqui envio los estados para que se validen
-        const miArray:Objeto[] = [
-          { stateType: 'Ciuad', nombre: ciudadSeleccionada?.text },
-          { stateType: 'Pais', nombre: paisSeleccionado?.text },
-          { stateType: 'TipoGrupo', nombre: tipoGrupo?.text },
-          { stateType: 'FechaDeCreacion', nombre: selectedDate?.toISOString() },
-          { stateType: 'Sector', nombre: sector?.text },
-          { stateType: 'FechaDeFinalizacion', nombre: selectedFinishDate?.toISOString() },
-          
-        ];
-        const resultadoValidaciones = Functions.validateStates(miArray)
-
-
-        if (resultadoValidaciones.length > 0) {
-          
-          if (!warningsStorage.some((error) => error.msg === 'No se puede crear el objeto porque hay los siguientes errores de validacion:' + resultadoValidaciones.map((errormsg) => errormsg))) {
-            setWarningsStorage([ Functions.addError('No se puede crear el objeto porque hay los siguientes errores de validacion:' + resultadoValidaciones.map((errormsg) => errormsg),'warning')]);
-            // setErrorsStorage([]);
-          }
-          
-
-        } else{
-          
-          
           setShowSuccessBanner(true);
           console.log(newItemFormItem)
           grupo ? await GroupFunctions.updateGroup(Number(codigo),newItemFormItem) : await GroupFunctions.addNewGroups(newItemFormItem)
@@ -385,16 +379,12 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
          
           
           setTitleExist(false)
-        }
-        
-        
-      }
+      
 
     } catch (error) {
       setErrorsStorage([...errorsStorage, Functions.addError(error,'error')]);
     }
     
-   
 
 
   }
@@ -448,8 +438,11 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
 
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const enteredDate = new Date(event.target.value);
+    // setFechaDeCreacion(Functions.isoDate(enteredDate.toString()));
+    setFechaDeCreacion(event.target.value)
     setSelectedDate(enteredDate);
-    setFechaDeCreacion(Functions.isoDate(enteredDate.toString()));
+    console.log('aaa')
+
     
   };
 
@@ -475,10 +468,63 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
 
   const handleSubmitAction = async () => {
 
-    await insetNewItem()
+
+
+    if (grupo) {
+      console.log('no hay que comprobar que el titulo existe porque estamos editando')
+    }else {
+
+      const itemExiste = await GroupFunctions.getGroupByName(denominacion)
+      console.log(itemExiste)
+      if (itemExiste > 0) {
+        
+        setTitleExist(true) 
+        if (!warningsStorage.some((error) => error.msg === 'El titulo del grupo ya existe en la lista' )){
+          setWarningsStorage([...warningsStorage, Functions.addError('El titulo del grupo ya existe en la lista','warning')]);
+          
+        }
+  
+      }
+
+    }
+
+
+
+      const miArray:Objeto[] = [
+        { stateType: 'Denominacion', nombre: denominacion },
+        { stateType: 'Ciuad', nombre: ciudadSeleccionada?.text },
+        { stateType: 'Pais', nombre: paisSeleccionado?.text },
+        { stateType: 'TipoGrupo', nombre: tipoGrupo?.text },
+        { stateType: 'Ambito', nombre: ambitoSeleccionada?.text },
+        { stateType: 'Tematica', nombre: tematicaSeleccionada?.text },
+        { stateType: 'Sector', nombre: sector?.text },
+        { stateType: 'Estado', nombre: 'Estado',estado:estado },
+        // { stateType: 'FechaDeFinalizacion', date:selectedFinishDate },
+        { stateType: 'FechaDeCreacion', nombre: 'FechaDeCreacion',date:selectedDate },
+        
+      ];
+      const resultadoValidaciones = Functions.validateStates(miArray)
+
+
+      if (resultadoValidaciones.length > 0) {
+        
+        if (!warningsStorage.some((error) => error.msg === 'No se puede crear el objeto porque hay los siguientes errores de validacion:' + resultadoValidaciones.map((errormsg) => errormsg))) {
+          setWarningsStorage([ Functions.addError('No se puede crear el objeto porque hay los siguientes errores de validacion:' + resultadoValidaciones.map((errormsg) => errormsg),'warning')]);
+          // setErrorsStorage([]);
+        }
+        
+
+      } else{
+
+
+      await insetNewItem()
 
     
   }
+
+
+
+}
 
 
   // *****END-HANDLERS*****//
@@ -635,36 +681,38 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
    
     
       <Field label="Denominación del grupo">
-      <input type="text" placeholder={'Escribe la denominación del grupo'}  value={grupo?.denominacion} onChange={(e)=>setDenominacion(e.target.value)}/>
+      <input type="text" placeholder={'Escribe la denominación del grupo'}  value={denominacion} onChange={(e)=>setDenominacion(e.target.value)}/>
       </Field>
       
       <Field label="Descripcion">
-        <textarea placeholder="Descripción del sector"  name="descripcion"  value={grupo?.descripcion}  onChange={(e)=>setDescripcion(e.target.value)}/>
+        <textarea placeholder="Descripción del sector"  name="descripcion"  value={descripcion}  onChange={(e)=>setDescripcion(e.target.value)}/>
       </Field>
       {/* {fechaDeCreacion}
       {fechaFinal} */}
       <Field label='Fecha de creación'>
-        <input type="date" name="fechaDeCreacion" placeholder={fechaDeCreacion} required={true} onChange={handleDateChange}/>
+        <input type="date" name="fechaDeCreacion" value={fechaDeCreacion} onChange={handleDateChange}/>
       </Field>
 
       <Field label='Fecha de finalización'>
-        <input type="date"  name="fechaFinalizacion" required={true} onChange={handleFinishDateChange} />
+        <input type="date"  name="fechaFinalizacion" value={fechaFinal} onChange={handleFinishDateChange} />
       </Field>
 
-      <Toggle label="Estado" onText="Activo" offText="Inactivo" onChange={onChange}  />
+      <Toggle label="Estado" onText="Activo" offText="Inactivo" checked={estado} onChange={onChange}  />
       
       <Field label='Sector'>
-      <Dropdown
-        placeholder="Seleccione un sector"
-        
-        defaultSelectedKey={grupo?.sectorAsociadoId}
-        options={sectorOptions}
-
-        onChange={handleSector.bind(this)}
-        // selectedKey={category?.key}
-        // selectedKey={grupo?.sector.Denominacion}
-        
-      />
+      {grupo ? <Dropdown
+            selectedKey={selectedSector}
+            options={sectorOptions}
+            onChange={handleSector}
+            
+            /> : <Dropdown
+            placeholder="Seleccione un sector"
+            options={sectorOptions}
+            onChange={handleSector}
+      
+          
+          />
+          }
       </Field>
       </Stack.Item>
 
@@ -750,7 +798,7 @@ export function GroupForm ({ grupo, context,codigo }: GroupFormProps){
       
       onChange={handleAmbito}
       
-      
+
       
     />
     }

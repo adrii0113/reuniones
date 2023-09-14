@@ -84,7 +84,7 @@ const columns: IColumn[] = [
                 .then(
                     (group)=>{
                         setGroups(group)
-                        console.log(group)
+                        
 
                       
                         group.map((itemGroup) => {
@@ -93,7 +93,7 @@ const columns: IColumn[] = [
         
                             if (taxonomyitem.id === itemGroup?.Pais?.TermGuid) {
                               taxonomyitem.labels.map((term) => {
-                                console.log(term)
+                                
                                   itemGroup.Pais.Label = term.name
                                   
                                 })
@@ -106,7 +106,7 @@ const columns: IColumn[] = [
         
                               if (taxonomyitem.id === itemGroup?.Ciudad?.TermGuid) {
                                 taxonomyitem.labels.map((term) => {
-                                  console.log(term)
+                                  
                                     itemGroup.Ciudad.Label = term.name
                                     
                                   })
@@ -119,7 +119,7 @@ const columns: IColumn[] = [
         
                                 if (taxonomyitem.id === itemGroup?.Ambito?.TermGuid) {
                                   taxonomyitem.labels.map((term) => {
-                                    console.log(term)
+                                   
                                       itemGroup.Ambito.Label = term.name
                                       
                                     })
@@ -132,25 +132,29 @@ const columns: IColumn[] = [
 
                                   if(choiceOption.ID === itemGroup.sectorAsociadoId){
                                     sector=choiceOption.Denominacion
-                                    console.log(sector)
+                                    
                                   }
 
                                 })
 
-                            const grupoSimplificado: IGruposSimplificated = {
-                              ID:itemGroup.ID,
-                              denominacion: itemGroup.denominacion,
-                              TipoGrupo:  itemGroup.TipoGrupo,
-                              descripcion: itemGroup.descripcion,
-                              Estado: itemGroup.Estado,
-                              fechaDeCreacion:itemGroup.fechaDeCreacion,
-                              fechaDeFinalizacion:itemGroup.fechaDeFinalizacion,
-                              Pais:itemGroup.Pais?.Label,
-                              Ciudad:itemGroup.Ciudad?.Label,
-                              Ambito:itemGroup.Ambito?.Label,
-                              sectorAsociado:sector,
-                              Tematic: itemGroup.Tematic
-                            };
+
+                                const parser = new DOMParser();
+                                const parsedHTML = parser.parseFromString(itemGroup.descripcion, 'text/html');
+                                const plainText = parsedHTML.body.textContent;
+                                const grupoSimplificado: IGruposSimplificated = {
+                                  ID:itemGroup.ID,
+                                  denominacion: itemGroup.denominacion,
+                                  TipoGrupo:  itemGroup.TipoGrupo,
+                                  descripcion: plainText,
+                                  Estado: itemGroup.Estado,
+                                  fechaDeCreacion:itemGroup.fechaDeCreacion,
+                                  fechaDeFinalizacion:itemGroup.fechaDeFinalizacion,
+                                  Pais:itemGroup.Pais?.Label,
+                                  Ciudad:itemGroup.Ciudad?.Label,
+                                  Ambito:itemGroup.Ambito?.Label,
+                                  sectorAsociado:sector,
+                                  Tematic: itemGroup.Tematic
+                                };
                             
 
                             arrayDeGruposSimplificados.push(grupoSimplificado)
@@ -173,9 +177,7 @@ const columns: IColumn[] = [
          getDataFromApi().then((news) =>{news}).catch((error) =>console.error)
     },[])
 
-    useEffect(()=>{
-      console.log(arrayDeGruposSimplificados)
-    },[arrayDeGruposSimplificados])
+   
 
     return (
 
